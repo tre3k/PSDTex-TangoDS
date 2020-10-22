@@ -307,16 +307,16 @@ void PSDTex::read_image(Tango::Attribute &attr)
             c_y = (double)size_y/(double)sum_y;
         }
 
-        /*
+
         ix = data4.x2-data4.x1;
         iy = data4.y2-data4.y1;
 
         ix = (int)(ix*c_x+0.5);
         iy = (int)(iy*c_y+0.5);
-        */
 
-        ix = (int)size_x*data4.x1/(data4.x1+data4.x2)-size_x/2;
-        iy = (int)size_y*data4.y1/(data4.y1+data4.y2)-size_y/2;
+
+        //ix = (int)size_x*data4.x1/(data4.x1+data4.x2)-size_x/2;
+        //iy = (int)size_y*data4.y1/(data4.y1+data4.y2)-size_y/2;
 
         //std::cout << ix << " " << iy << "\n";
 
