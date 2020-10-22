@@ -66,12 +66,6 @@ private:
 public:
 	//	devicefile_path:	Device file path
 	string	devicefile_path;
-	//	manual_ceoff:	
-	Tango::DevBoolean	manual_ceoff;
-	//	coeff_x:	coeff_x if manual_coeff is true
-	Tango::DevDouble	coeff_x;
-	//	coeff_y:	coeff_y if manual_coeff is true
-	Tango::DevDouble	coeff_y;
 
 //	Attribute data members
 public:

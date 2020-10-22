@@ -170,9 +170,6 @@ void PSDTex::get_device_property()
 	//	Read device properties from database.
 	Tango::DbData	dev_prop;
 	dev_prop.push_back(Tango::DbDatum("devicefile_path"));
-	dev_prop.push_back(Tango::DbDatum("manual_ceoff"));
-	dev_prop.push_back(Tango::DbDatum("coeff_x"));
-	dev_prop.push_back(Tango::DbDatum("coeff_y"));
 
 	//	is there at least one property to be read ?
 	if (dev_prop.size()>0)
@@ -197,39 +194,6 @@ void PSDTex::get_device_property()
 		}
 		//	And try to extract devicefile_path value from database
 		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  devicefile_path;
-
-		//	Try to initialize manual_ceoff from class property
-		cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-		if (cl_prop.is_empty()==false)	cl_prop  >>  manual_ceoff;
-		else {
-			//	Try to initialize manual_ceoff from default device value
-			def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-			if (def_prop.is_empty()==false)	def_prop  >>  manual_ceoff;
-		}
-		//	And try to extract manual_ceoff value from database
-		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  manual_ceoff;
-
-		//	Try to initialize coeff_x from class property
-		cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-		if (cl_prop.is_empty()==false)	cl_prop  >>  coeff_x;
-		else {
-			//	Try to initialize coeff_x from default device value
-			def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-			if (def_prop.is_empty()==false)	def_prop  >>  coeff_x;
-		}
-		//	And try to extract coeff_x value from database
-		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  coeff_x;
-
-		//	Try to initialize coeff_y from class property
-		cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-		if (cl_prop.is_empty()==false)	cl_prop  >>  coeff_y;
-		else {
-			//	Try to initialize coeff_y from default device value
-			def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-			if (def_prop.is_empty()==false)	def_prop  >>  coeff_y;
-		}
-		//	And try to extract coeff_y value from database
-		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  coeff_y;
 
 	}
 
@@ -299,6 +263,7 @@ void PSDTex::read_image(Tango::Attribute &attr)
         sum_x = data4.x1+data4.x2;
         sum_y = data4.y1+data4.y2;
 
+        /*
         if(manual_ceoff){
             c_x = coeff_x;
             c_y = coeff_y;
@@ -306,17 +271,19 @@ void PSDTex::read_image(Tango::Attribute &attr)
             c_x = (double)size_x/(double)sum_x;
             c_y = (double)size_y/(double)sum_y;
         }
+        */
 
 
+        /*
         ix = data4.x2-data4.x1;
         iy = data4.y2-data4.y1;
 
         ix = (int)(ix*c_x+0.5);
         iy = (int)(iy*c_y+0.5);
+        */
 
-
-        //ix = (int)size_x*data4.x1/(data4.x1+data4.x2)-size_x/2;
-        //iy = (int)size_y*data4.y1/(data4.y1+data4.y2)-size_y/2;
+        ix = (int)size_x*data4.x1/(data4.x1+data4.x2)-size_x/2;
+        iy = (int)size_y*data4.y1/(data4.y1+data4.y2)-size_y/2;
 
         //std::cout << ix << " " << iy << "\n";
 
