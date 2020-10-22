@@ -148,6 +148,8 @@ void PSDTex::init_device()
     if(pd!=nullptr) delete pd;
     pd = new PLX9030Detector::plx9030Detector(devicefile_path);
 
+    device_state = Tango::ON;
+
 	
 	/*----- PROTECTED REGION END -----*/	//	PSDTex::init_device
 }
@@ -326,6 +328,8 @@ void PSDTex::start()
 
     pd->init();
     pd->start();
+    device_state = Tango::RUNNING;
+    device_status = "counting..."
 	
 	/*----- PROTECTED REGION END -----*/	//	PSDTex::start
 }
@@ -342,6 +346,8 @@ void PSDTex::stop()
 	/*----- PROTECTED REGION ID(PSDTex::stop) ENABLED START -----*/
 	
     pd->stop();
+    device_state = Tango::ON;
+    device_status = "stop";
 	
 	/*----- PROTECTED REGION END -----*/	//	PSDTex::stop
 }
