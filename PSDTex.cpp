@@ -329,7 +329,7 @@ void PSDTex::start()
     pd->init();
     pd->start();
     device_state = Tango::RUNNING;
-    device_status = "counting..."
+    device_status = "counting...";
 	
 	/*----- PROTECTED REGION END -----*/	//	PSDTex::start
 }
