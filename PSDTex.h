@@ -59,8 +59,9 @@ class PSDTex : public TANGO_BASE_CLASS
 /*----- PROTECTED REGION ID(PSDTex::Data Members) ENABLED START -----*/
 
 private:
-    PLX9030Detector::plx9030Detector *pd = nullptr;
-
+	PLX9030Detector::plx9030Detector *pd = nullptr;
+	LogClass *log = nullptr;
+    
 /*----- PROTECTED REGION END -----*/	//	PSDTex::Data Members
 
 //	Device property data members

@@ -14,7 +14,9 @@ void LogClass::write(std::string text){
 }
 
 
-void LogClass::write4values(double x1,double x2,double y1, double y2){
-	lf << "\t" << "x1 = " << x1 << ", x2 = " << x2 << ", y1 = " << y1 << ", y2 = " << y2 << std::endl;
+void LogClass::write4values(double x1,double x2,double y1, double y2,bool correct){
+	lf << "\t" << "x1 = " << x1 << ", x2 = " << x2 << ", y1 = " << y1 << ", y2 = " << y2;
+	if(correct) lf << ", 1";
+	else lf << ", 0";
 	return;
 }

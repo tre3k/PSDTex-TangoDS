@@ -13,7 +13,7 @@ public:
 	LogClass(std::string logfile);
 	~LogClass(void){lf.close();}
 	void write(std::string text);
-	void write4values(double x1,double x2,double y1, double y2);
+	void write4values(double x1,double x2,double y1, double y2, bool correct);
 
 };
 
