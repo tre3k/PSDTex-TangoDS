@@ -143,6 +143,8 @@ void PSDTex::init_device()
 	
 	attr_image_read = new Tango::DevDouble[256*256];
 	/*----- PROTECTED REGION ID(PSDTex::init_device) ENABLED START -----*/
+
+
 	
     clearImage();
     if(pd!=nullptr) delete pd;

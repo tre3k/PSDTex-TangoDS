@@ -28,7 +28,8 @@ add_executable(PSDTex
         PSDTexClass.cpp PSDTexClass.h
         PSDTexStateMachine.cpp
         ClassFactory.cpp
-        plx9030detector.cpp plx9030detector.h)
+        plx9030detector.cpp plx9030detector.h
+	LogClass.cpp LogClass.h)
 
 target_link_libraries(PSDTex
         ${TANGO_LIB}

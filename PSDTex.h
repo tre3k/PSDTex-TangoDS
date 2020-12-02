@@ -36,6 +36,7 @@
 #include <tango.h>
 
 #include "plx9030detector.h"
+#include "LogClass.h"
 
 /*----- PROTECTED REGION END -----*/	//	PSDTex.h
 
