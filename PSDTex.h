@@ -67,6 +67,8 @@ private:
 public:
 	//	devicefile_path:	Device file path
 	string	devicefile_path;
+	//	log_file:	
+	string	log_file;
 
 //	Attribute data members
 public:

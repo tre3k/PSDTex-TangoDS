@@ -144,14 +144,15 @@ void PSDTex::init_device()
 	attr_image_read = new Tango::DevDouble[256*256];
 	/*----- PROTECTED REGION ID(PSDTex::init_device) ENABLED START -----*/
 
-
+	LogClass *log = new LogClass(log_file);
 	
-    clearImage();
-    if(pd!=nullptr) delete pd;
-    pd = new PLX9030Detector::plx9030Detector(devicefile_path);
+	clearImage();
+	if(pd!=nullptr) delete pd;
+	pd = new PLX9030Detector::plx9030Detector(devicefile_path);
+    
+	device_state = Tango::ON;
 
-    device_state = Tango::ON;
-
+	log->write("INIT device");
 	
 	/*----- PROTECTED REGION END -----*/	//	PSDTex::init_device
 }
@@ -174,6 +175,7 @@ void PSDTex::get_device_property()
 	//	Read device properties from database.
 	Tango::DbData	dev_prop;
 	dev_prop.push_back(Tango::DbDatum("devicefile_path"));
+	dev_prop.push_back(Tango::DbDatum("log_file"));
 
 	//	is there at least one property to be read ?
 	if (dev_prop.size()>0)
@@ -198,6 +200,17 @@ void PSDTex::get_device_property()
 		}
 		//	And try to extract devicefile_path value from database
 		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  devicefile_path;
+
+		//	Try to initialize log_file from class property
+		cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+		if (cl_prop.is_empty()==false)	cl_prop  >>  log_file;
+		else {
+			//	Try to initialize log_file from default device value
+			def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+			if (def_prop.is_empty()==false)	def_prop  >>  log_file;
+		}
+		//	And try to extract log_file value from database
+		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  log_file;
 
 	}
 
