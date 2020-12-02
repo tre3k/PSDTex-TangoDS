@@ -324,7 +324,7 @@ void PSDTex::read_image(Tango::Attribute &attr)
         setImageCell(ix,iy,1.0);
     }while(data4.correct);
 
-	attr.set_value(attr_image_read, 256, 256);
+    attr.set_value(attr_image_read, 256, 256);
 	
 	/*----- PROTECTED REGION END -----*/	//	PSDTex::read_image
 }
