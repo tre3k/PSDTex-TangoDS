@@ -349,9 +349,10 @@ namespace PSDTex_ns
 
 		pd->init();
 		pd->start();
+		log->write("Start counting");
 		device_state = Tango::RUNNING;
 		device_status = "counting...";
-	
+		
 		/*----- PROTECTED REGION END -----*/	//	PSDTex::start
 	}
 //--------------------------------------------------------
@@ -367,6 +368,7 @@ namespace PSDTex_ns
 		/*----- PROTECTED REGION ID(PSDTex::stop) ENABLED START -----*/
 	
 		pd->stop();
+		log->write("Stop counting");
 		device_state = Tango::ON;
 		device_status = "stop";
 	
