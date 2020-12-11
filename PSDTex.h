@@ -61,7 +61,8 @@ class PSDTex : public TANGO_BASE_CLASS
 private:
 	PLX9030Detector::plx9030Detector *pd = nullptr;
 	LogClass *log = nullptr;
-    
+	short int global_flags = 0;
+	
 /*----- PROTECTED REGION END -----*/	//	PSDTex::Data Members
 
 //	Device property data members
@@ -73,6 +74,8 @@ public:
 
 //	Attribute data members
 public:
+	Tango::DevBoolean	*attr_full_mem_read;
+	Tango::DevBoolean	*attr_half_mem_read;
 	Tango::DevDouble	*attr_image_read;
 
 //	Constructors and destructors
@@ -136,6 +139,24 @@ public:
 	virtual void read_attr_hardware(vector<long> &attr_list);
 
 /**
+ *	Attribute full_mem related methods
+ *	Description: 
+ *
+ *	Data type:	Tango::DevBoolean
+ *	Attr type:	Scalar
+ */
+	virtual void read_full_mem(Tango::Attribute &attr);
+	virtual bool is_full_mem_allowed(Tango::AttReqType type);
+/**
+ *	Attribute half_mem related methods
+ *	Description: 
+ *
+ *	Data type:	Tango::DevBoolean
+ *	Attr type:	Scalar
+ */
+	virtual void read_half_mem(Tango::Attribute &attr);
+	virtual bool is_half_mem_allowed(Tango::AttReqType type);
+/**
  *	Attribute image related methods
  *	Description: 
  *
@@ -191,9 +212,9 @@ public:
 	void add_dynamic_commands();
 
 /*----- PROTECTED REGION ID(PSDTex::Additional Method prototypes) ENABLED START -----*/
-
-    void setImageCell(int x,int y,Tango::DevDouble value);
-    void clearImage(void);
+	
+	void setImageCell(int x,int y,Tango::DevDouble value);
+	void clearImage(void);
 
 /*----- PROTECTED REGION END -----*/	//	PSDTex::Additional Method prototypes
 };

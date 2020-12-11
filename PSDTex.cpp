@@ -58,9 +58,11 @@
 //================================================================
 
 //================================================================
-//  Attributes managed is:
+//  Attributes managed are:
 //================================================================
-//  image  |  Tango::DevDouble	Image  ( max = 256 x 256)
+//  full_mem  |  Tango::DevBoolean	Scalar
+//  half_mem  |  Tango::DevBoolean	Scalar
+//  image     |  Tango::DevDouble	Image  ( max = 256 x 256)
 //================================================================
 
 namespace PSDTex_ns
@@ -78,32 +80,32 @@ namespace PSDTex_ns
  *                implementing the classPSDTex
  */
 //--------------------------------------------------------
-	PSDTex::PSDTex(Tango::DeviceClass *cl, string &s)
-		: TANGO_BASE_CLASS(cl, s.c_str())
-	{
-		/*----- PROTECTED REGION ID(PSDTex::constructor_1) ENABLED START -----*/
+PSDTex::PSDTex(Tango::DeviceClass *cl, string &s)
+ : TANGO_BASE_CLASS(cl, s.c_str())
+{
+	/*----- PROTECTED REGION ID(PSDTex::constructor_1) ENABLED START -----*/
 		init_device();
 	
 		/*----- PROTECTED REGION END -----*/	//	PSDTex::constructor_1
-	}
+}
 //--------------------------------------------------------
-	PSDTex::PSDTex(Tango::DeviceClass *cl, const char *s)
-		: TANGO_BASE_CLASS(cl, s)
-	{
-		/*----- PROTECTED REGION ID(PSDTex::constructor_2) ENABLED START -----*/
+PSDTex::PSDTex(Tango::DeviceClass *cl, const char *s)
+ : TANGO_BASE_CLASS(cl, s)
+{
+	/*----- PROTECTED REGION ID(PSDTex::constructor_2) ENABLED START -----*/
 		init_device();
 	
 		/*----- PROTECTED REGION END -----*/	//	PSDTex::constructor_2
-	}
+}
 //--------------------------------------------------------
-	PSDTex::PSDTex(Tango::DeviceClass *cl, const char *s, const char *d)
-		: TANGO_BASE_CLASS(cl, s, d)
-	{
-		/*----- PROTECTED REGION ID(PSDTex::constructor_3) ENABLED START -----*/
+PSDTex::PSDTex(Tango::DeviceClass *cl, const char *s, const char *d)
+ : TANGO_BASE_CLASS(cl, s, d)
+{
+	/*----- PROTECTED REGION ID(PSDTex::constructor_3) ENABLED START -----*/
 		init_device();
 	
 		/*----- PROTECTED REGION END -----*/	//	PSDTex::constructor_3
-	}
+}
 
 //--------------------------------------------------------
 /**
@@ -111,16 +113,17 @@ namespace PSDTex_ns
  *	Description : will be called at device destruction or at init command
  */
 //--------------------------------------------------------
-	void PSDTex::delete_device()
-	{
-		DEBUG_STREAM << "PSDTex::delete_device() " << device_name << endl;
-		/*----- PROTECTED REGION ID(PSDTex::delete_device) ENABLED START -----*/
+void PSDTex::delete_device()
+{
+	DEBUG_STREAM << "PSDTex::delete_device() " << device_name << endl;
+	/*----- PROTECTED REGION ID(PSDTex::delete_device) ENABLED START -----*/
 	
 		//	Delete device allocated objects
 	
 		/*----- PROTECTED REGION END -----*/	//	PSDTex::delete_device
-		delete[] attr_image_read;
-	}
+	delete[] attr_half_mem_read;
+	delete[] attr_image_read;
+}
 
 //--------------------------------------------------------
 /**
@@ -128,35 +131,36 @@ namespace PSDTex_ns
  *	Description : will be called at device initialization.
  */
 //--------------------------------------------------------
-	void PSDTex::init_device()
-	{
-		DEBUG_STREAM << "PSDTex::init_device() create device " << device_name << endl;
-		/*----- PROTECTED REGION ID(PSDTex::init_device_before) ENABLED START -----*/
+void PSDTex::init_device()
+{
+	DEBUG_STREAM << "PSDTex::init_device() create device " << device_name << endl;
+	/*----- PROTECTED REGION ID(PSDTex::init_device_before) ENABLED START -----*/
 	
-		//	Initialization before get_device_property() call
+	//	Initialization before get_device_property() call
 	
-		/*----- PROTECTED REGION END -----*/	//	PSDTex::init_device_before
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::init_device_before
 	
 
-		//	Get the device properties from database
-		get_device_property();
+	//	Get the device properties from database
+	get_device_property();
 	
-		attr_image_read = new Tango::DevDouble[256*256];
-		/*----- PROTECTED REGION ID(PSDTex::init_device) ENABLED START -----*/
+	attr_half_mem_read = new Tango::DevBoolean[1];
+	attr_image_read = new Tango::DevDouble[256*256];
+	/*----- PROTECTED REGION ID(PSDTex::init_device) ENABLED START -----*/
 
-		if(log!=nullptr) delete log;
-		log = new LogClass(log_file);
+	if(log!=nullptr) delete log;
+	log = new LogClass(log_file);
 	
-		clearImage();
-		if(pd!=nullptr) delete pd;
-		pd = new PLX9030Detector::plx9030Detector(devicefile_path);
+	clearImage();
+	if(pd!=nullptr) delete pd;
+	pd = new PLX9030Detector::plx9030Detector(devicefile_path);
     
-		device_state = Tango::ON;
-
-		log->write("INIT device");
+	device_state = Tango::ON;
 	
-		/*----- PROTECTED REGION END -----*/	//	PSDTex::init_device
-	}
+	log->write("INIT device");
+	
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::init_device
+}
 
 //--------------------------------------------------------
 /**
@@ -164,63 +168,63 @@ namespace PSDTex_ns
  *	Description : Read database to initialize property data members.
  */
 //--------------------------------------------------------
-	void PSDTex::get_device_property()
+void PSDTex::get_device_property()
+{
+	/*----- PROTECTED REGION ID(PSDTex::get_device_property_before) ENABLED START -----*/
+	
+	//	Initialize property data members
+	
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::get_device_property_before
+
+
+	//	Read device properties from database.
+	Tango::DbData	dev_prop;
+	dev_prop.push_back(Tango::DbDatum("devicefile_path"));
+	dev_prop.push_back(Tango::DbDatum("log_file"));
+
+	//	is there at least one property to be read ?
+	if (dev_prop.size()>0)
 	{
-		/*----- PROTECTED REGION ID(PSDTex::get_device_property_before) ENABLED START -----*/
+		//	Call database and extract values
+		if (Tango::Util::instance()->_UseDb==true)
+			get_db_device()->get_property(dev_prop);
 	
-		//	Initialize property data members
-	
-		/*----- PROTECTED REGION END -----*/	//	PSDTex::get_device_property_before
+		//	get instance on PSDTexClass to get class property
+		Tango::DbDatum	def_prop, cl_prop;
+		PSDTexClass	*ds_class =
+			(static_cast<PSDTexClass *>(get_device_class()));
+		int	i = -1;
 
-
-		//	Read device properties from database.
-		Tango::DbData	dev_prop;
-		dev_prop.push_back(Tango::DbDatum("devicefile_path"));
-		dev_prop.push_back(Tango::DbDatum("log_file"));
-
-		//	is there at least one property to be read ?
-		if (dev_prop.size()>0)
-		{
-			//	Call database and extract values
-			if (Tango::Util::instance()->_UseDb==true)
-				get_db_device()->get_property(dev_prop);
-	
-			//	get instance on PSDTexClass to get class property
-			Tango::DbDatum	def_prop, cl_prop;
-			PSDTexClass	*ds_class =
-				(static_cast<PSDTexClass *>(get_device_class()));
-			int	i = -1;
-
-			//	Try to initialize devicefile_path from class property
-			cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-			if (cl_prop.is_empty()==false)	cl_prop  >>  devicefile_path;
-			else {
-				//	Try to initialize devicefile_path from default device value
-				def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-				if (def_prop.is_empty()==false)	def_prop  >>  devicefile_path;
-			}
-			//	And try to extract devicefile_path value from database
-			if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  devicefile_path;
-
-			//	Try to initialize log_file from class property
-			cl_prop = ds_class->get_class_property(dev_prop[++i].name);
-			if (cl_prop.is_empty()==false)	cl_prop  >>  log_file;
-			else {
-				//	Try to initialize log_file from default device value
-				def_prop = ds_class->get_default_device_property(dev_prop[i].name);
-				if (def_prop.is_empty()==false)	def_prop  >>  log_file;
-			}
-			//	And try to extract log_file value from database
-			if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  log_file;
-
+		//	Try to initialize devicefile_path from class property
+		cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+		if (cl_prop.is_empty()==false)	cl_prop  >>  devicefile_path;
+		else {
+			//	Try to initialize devicefile_path from default device value
+			def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+			if (def_prop.is_empty()==false)	def_prop  >>  devicefile_path;
 		}
+		//	And try to extract devicefile_path value from database
+		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  devicefile_path;
 
-		/*----- PROTECTED REGION ID(PSDTex::get_device_property_after) ENABLED START -----*/
+		//	Try to initialize log_file from class property
+		cl_prop = ds_class->get_class_property(dev_prop[++i].name);
+		if (cl_prop.is_empty()==false)	cl_prop  >>  log_file;
+		else {
+			//	Try to initialize log_file from default device value
+			def_prop = ds_class->get_default_device_property(dev_prop[i].name);
+			if (def_prop.is_empty()==false)	def_prop  >>  log_file;
+		}
+		//	And try to extract log_file value from database
+		if (dev_prop[i].is_empty()==false)	dev_prop[i]  >>  log_file;
+
+	}
+
+	/*----- PROTECTED REGION ID(PSDTex::get_device_property_after) ENABLED START -----*/
 	
 		//	Check device property data members init
 	
 		/*----- PROTECTED REGION END -----*/	//	PSDTex::get_device_property_after
-	}
+}
 
 //--------------------------------------------------------
 /**
@@ -228,15 +232,15 @@ namespace PSDTex_ns
  *	Description : method always executed before any command is executed
  */
 //--------------------------------------------------------
-	void PSDTex::always_executed_hook()
-	{
-		DEBUG_STREAM << "PSDTex::always_executed_hook()  " << device_name << endl;
-		/*----- PROTECTED REGION ID(PSDTex::always_executed_hook) ENABLED START -----*/
+void PSDTex::always_executed_hook()
+{
+	DEBUG_STREAM << "PSDTex::always_executed_hook()  " << device_name << endl;
+	/*----- PROTECTED REGION ID(PSDTex::always_executed_hook) ENABLED START -----*/
 	
-		//	code always executed before all requests
+	//	code always executed before all requests
 	
-		/*----- PROTECTED REGION END -----*/	//	PSDTex::always_executed_hook
-	}
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::always_executed_hook
+}
 
 //--------------------------------------------------------
 /**
@@ -244,16 +248,53 @@ namespace PSDTex_ns
  *	Description : Hardware acquisition for attributes
  */
 //--------------------------------------------------------
-	void PSDTex::read_attr_hardware(TANGO_UNUSED(vector<long> &attr_list))
-	{
-		DEBUG_STREAM << "PSDTex::read_attr_hardware(vector<long> &attr_list) entering... " << endl;
-		/*----- PROTECTED REGION ID(PSDTex::read_attr_hardware) ENABLED START -----*/
+void PSDTex::read_attr_hardware(TANGO_UNUSED(vector<long> &attr_list))
+{
+	DEBUG_STREAM << "PSDTex::read_attr_hardware(vector<long> &attr_list) entering... " << endl;
+	/*----- PROTECTED REGION ID(PSDTex::read_attr_hardware) ENABLED START -----*/
 	
-		//	Add your own code
+	//	Add your own code
 	
-		/*----- PROTECTED REGION END -----*/	//	PSDTex::read_attr_hardware
-	}
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::read_attr_hardware
+}
 
+//--------------------------------------------------------
+/**
+ *	Read attribute full_mem related method
+ *	Description: 
+ *
+ *	Data type:	Tango::DevBoolean
+ *	Attr type:	Scalar
+ */
+//--------------------------------------------------------
+void PSDTex::read_full_mem(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "PSDTex::read_full_mem(Tango::Attribute &attr) entering... " << endl;
+	/*----- PROTECTED REGION ID(PSDTex::read_full_mem) ENABLED START -----*/
+       
+	
+	attr.set_value(attr_full_mem_read);
+	
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::read_full_mem
+}
+//--------------------------------------------------------
+/**
+ *	Read attribute half_mem related method
+ *	Description: 
+ *
+ *	Data type:	Tango::DevBoolean
+ *	Attr type:	Scalar
+ */
+//--------------------------------------------------------
+void PSDTex::read_half_mem(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "PSDTex::read_half_mem(Tango::Attribute &attr) entering... " << endl;
+	/*----- PROTECTED REGION ID(PSDTex::read_half_mem) ENABLED START -----*/
+	//	Set the attribute value
+	attr.set_value(attr_half_mem_read);
+	
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::read_half_mem
+}
 //--------------------------------------------------------
 /**
  *	Read attribute image related method
@@ -263,10 +304,10 @@ namespace PSDTex_ns
  *	Attr type:	Image max = 256 x 256
  */
 //--------------------------------------------------------
-	void PSDTex::read_image(Tango::Attribute &attr)
-	{
-		DEBUG_STREAM << "PSDTex::read_image(Tango::Attribute &attr) entering... " << endl;
-		/*----- PROTECTED REGION ID(PSDTex::read_image) ENABLED START -----*/
+void PSDTex::read_image(Tango::Attribute &attr)
+{
+	DEBUG_STREAM << "PSDTex::read_image(Tango::Attribute &attr) entering... " << endl;
+	/*----- PROTECTED REGION ID(PSDTex::read_image) ENABLED START -----*/
 
 		const int size_x = 256;
 		const int size_y = 256;
@@ -317,7 +358,7 @@ namespace PSDTex_ns
 		attr.set_value(attr_image_read, 256, 256);
 	
 		/*----- PROTECTED REGION END -----*/	//	PSDTex::read_image
-	}
+}
 
 //--------------------------------------------------------
 /**
@@ -326,14 +367,14 @@ namespace PSDTex_ns
  *                for specified device.
  */
 //--------------------------------------------------------
-	void PSDTex::add_dynamic_attributes()
-	{
-		/*----- PROTECTED REGION ID(PSDTex::add_dynamic_attributes) ENABLED START -----*/
+void PSDTex::add_dynamic_attributes()
+{
+	/*----- PROTECTED REGION ID(PSDTex::add_dynamic_attributes) ENABLED START -----*/
 	
 		//	Add your own code to create and add dynamic attributes if any
 	
 		/*----- PROTECTED REGION END -----*/	//	PSDTex::add_dynamic_attributes
-	}
+}
 
 //--------------------------------------------------------
 /**
@@ -342,10 +383,10 @@ namespace PSDTex_ns
  *
  */
 //--------------------------------------------------------
-	void PSDTex::start()
-	{
-		DEBUG_STREAM << "PSDTex::Start()  - " << device_name << endl;
-		/*----- PROTECTED REGION ID(PSDTex::start) ENABLED START -----*/
+void PSDTex::start()
+{
+	DEBUG_STREAM << "PSDTex::Start()  - " << device_name << endl;
+	/*----- PROTECTED REGION ID(PSDTex::start) ENABLED START -----*/
 
 		pd->init();
 		pd->start();
@@ -354,7 +395,7 @@ namespace PSDTex_ns
 		device_status = "counting...";
 		
 		/*----- PROTECTED REGION END -----*/	//	PSDTex::start
-	}
+}
 //--------------------------------------------------------
 /**
  *	Command Stop related method
@@ -362,10 +403,10 @@ namespace PSDTex_ns
  *
  */
 //--------------------------------------------------------
-	void PSDTex::stop()
-	{
-		DEBUG_STREAM << "PSDTex::Stop()  - " << device_name << endl;
-		/*----- PROTECTED REGION ID(PSDTex::stop) ENABLED START -----*/
+void PSDTex::stop()
+{
+	DEBUG_STREAM << "PSDTex::Stop()  - " << device_name << endl;
+	/*----- PROTECTED REGION ID(PSDTex::stop) ENABLED START -----*/
 	
 		pd->stop();
 		log->write("Stop counting");
@@ -373,7 +414,7 @@ namespace PSDTex_ns
 		device_status = "stop";
 	
 		/*----- PROTECTED REGION END -----*/	//	PSDTex::stop
-	}
+}
 //--------------------------------------------------------
 /**
  *	Command Clear related method
@@ -381,15 +422,15 @@ namespace PSDTex_ns
  *
  */
 //--------------------------------------------------------
-	void PSDTex::clear()
-	{
-		DEBUG_STREAM << "PSDTex::Clear()  - " << device_name << endl;
-		/*----- PROTECTED REGION ID(PSDTex::clear) ENABLED START -----*/
+void PSDTex::clear()
+{
+	DEBUG_STREAM << "PSDTex::Clear()  - " << device_name << endl;
+	/*----- PROTECTED REGION ID(PSDTex::clear) ENABLED START -----*/
 
 		clearImage();
 	
 		/*----- PROTECTED REGION END -----*/	//	PSDTex::clear
-	}
+}
 //--------------------------------------------------------
 /**
  *	Method      : PSDTex::add_dynamic_commands()
@@ -397,14 +438,14 @@ namespace PSDTex_ns
  *                for specified device.
  */
 //--------------------------------------------------------
-	void PSDTex::add_dynamic_commands()
-	{
-		/*----- PROTECTED REGION ID(PSDTex::add_dynamic_commands) ENABLED START -----*/
+void PSDTex::add_dynamic_commands()
+{
+	/*----- PROTECTED REGION ID(PSDTex::add_dynamic_commands) ENABLED START -----*/
 	
 		//	Add your own code to create and add dynamic commands if any
 	
 		/*----- PROTECTED REGION END -----*/	//	PSDTex::add_dynamic_commands
-	}
+}
 
 /*----- PROTECTED REGION ID(PSDTex::namespace_ending) ENABLED START -----*/
 

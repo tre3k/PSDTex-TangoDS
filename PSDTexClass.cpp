@@ -273,9 +273,9 @@ void PSDTexClass::set_default_property()
 	//	Set Default device Properties
 	prop_name = "devicefile_path";
 	prop_desc = "Device file path";
-	prop_def  = "/dev/plxdetector0";
+	prop_def  = "/dev/plxdev0";
 	vect_data.clear();
-	vect_data.push_back("/dev/plxdetector0");
+	vect_data.push_back("/dev/plxdev0");
 	if (prop_def.length()>0)
 	{
 		Tango::DbDatum	data(prop_name);
@@ -405,6 +405,54 @@ void PSDTexClass::attribute_factory(vector<Tango::Attr *> &att_list)
 	//	Add your own code
 	
 	/*----- PROTECTED REGION END -----*/	//	PSDTexClass::attribute_factory_before
+	//	Attribute : full_mem
+	full_memAttrib	*full_mem = new full_memAttrib();
+	Tango::UserDefaultAttrProp	full_mem_prop;
+	//	description	not set for full_mem
+	//	label	not set for full_mem
+	//	unit	not set for full_mem
+	//	standard_unit	not set for full_mem
+	//	display_unit	not set for full_mem
+	//	format	not set for full_mem
+	//	max_value	not set for full_mem
+	//	min_value	not set for full_mem
+	//	max_alarm	not set for full_mem
+	//	min_alarm	not set for full_mem
+	//	max_warning	not set for full_mem
+	//	min_warning	not set for full_mem
+	//	delta_t	not set for full_mem
+	//	delta_val	not set for full_mem
+	
+	full_mem->set_default_properties(full_mem_prop);
+	//	Not Polled
+	full_mem->set_disp_level(Tango::OPERATOR);
+	//	Not Memorized
+	att_list.push_back(full_mem);
+
+	//	Attribute : half_mem
+	half_memAttrib	*half_mem = new half_memAttrib();
+	Tango::UserDefaultAttrProp	half_mem_prop;
+	//	description	not set for half_mem
+	//	label	not set for half_mem
+	//	unit	not set for half_mem
+	//	standard_unit	not set for half_mem
+	//	display_unit	not set for half_mem
+	//	format	not set for half_mem
+	//	max_value	not set for half_mem
+	//	min_value	not set for half_mem
+	//	max_alarm	not set for half_mem
+	//	min_alarm	not set for half_mem
+	//	max_warning	not set for half_mem
+	//	min_warning	not set for half_mem
+	//	delta_t	not set for half_mem
+	//	delta_val	not set for half_mem
+	
+	half_mem->set_default_properties(half_mem_prop);
+	//	Not Polled
+	half_mem->set_disp_level(Tango::OPERATOR);
+	//	Not Memorized
+	att_list.push_back(half_mem);
+
 	//	Attribute : image
 	imageAttrib	*image = new imageAttrib();
 	Tango::UserDefaultAttrProp	image_prop;

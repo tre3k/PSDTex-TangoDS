@@ -29,6 +29,7 @@ add_executable(PSDTex
         PSDTexStateMachine.cpp
         ClassFactory.cpp
         plx9030detector.cpp plx9030detector.h
+	plx9030c.cpp plx9030c.h
 	LogClass.cpp LogClass.h)
 
 target_link_libraries(PSDTex

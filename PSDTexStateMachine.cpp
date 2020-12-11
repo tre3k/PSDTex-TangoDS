@@ -46,6 +46,38 @@ namespace PSDTex_ns
 
 //--------------------------------------------------------
 /**
+ *	Method      : PSDTex::is_full_mem_allowed()
+ *	Description : Execution allowed for full_mem attribute
+ */
+//--------------------------------------------------------
+bool PSDTex::is_full_mem_allowed(TANGO_UNUSED(Tango::AttReqType type))
+{
+
+	//	Not any excluded states for full_mem attribute in read access.
+	/*----- PROTECTED REGION ID(PSDTex::full_memStateAllowed_READ) ENABLED START -----*/
+	
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::full_memStateAllowed_READ
+	return true;
+}
+
+//--------------------------------------------------------
+/**
+ *	Method      : PSDTex::is_half_mem_allowed()
+ *	Description : Execution allowed for half_mem attribute
+ */
+//--------------------------------------------------------
+bool PSDTex::is_half_mem_allowed(TANGO_UNUSED(Tango::AttReqType type))
+{
+
+	//	Not any excluded states for half_mem attribute in read access.
+	/*----- PROTECTED REGION ID(PSDTex::half_memStateAllowed_READ) ENABLED START -----*/
+	
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::half_memStateAllowed_READ
+	return true;
+}
+
+//--------------------------------------------------------
+/**
  *	Method      : PSDTex::is_image_allowed()
  *	Description : Execution allowed for image attribute
  */

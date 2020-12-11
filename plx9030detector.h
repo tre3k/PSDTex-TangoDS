@@ -8,63 +8,71 @@
 #include <fcntl.h>
 #include <stdbool.h>
 #include <stropts.h>
+#include <vector>
+
+#include "plx9030c.h"
+
 
 namespace PLX9030Detector{
 
-#define IOCTL_INIT_DETECTOR 0xfacecafe             // for initialization detector
-#define IOCTL_START_DETECTOR IOCTL_INIT_DETECTOR+1 // for start measure
-#define IOCTL_STOP_DETECTOR IOCTL_INIT_DETECTOR+2  // for stop measure
-#define IOCTL_READ_DETECTOR IOCTL_INIT_DETECTOR+3  // for read data from FIFO
-#define IOCTL_TEST_DETECTOR IOCTL_INIT_DETECTOR+4  // for test memory half/full/empty
-
-  /* for status */
-  enum{
-    OK,
-    ERROR_OPEN
-  };
-  
-  enum{
-    MEMORY_EMPTY,
-    MEMORY_FULL,
-    MEMORY_HALF
-  };
-
-#define X1 0x03
-#define X2 0x07
-#define Y1 0x01
-#define Y2 0x05
-
+#define MEMORY_SIZE 524288 //bytes
  
- struct raw_data{
-   int code;
-   int value;
-   uint16_t raw;
- };
+#define MEMORY_EMPTY 0
+#define MEMORY_HALF 2
+#define MEMORY_FULL 3  
 
- struct four_value{
-   int x1,x2,y1,y2;
-   bool correct;
- };
+#define Y2 3
+#define Y1 7
+#define X2 1
+#define X1 5
  
- class plx9030Detector{
- public:
-   explicit plx9030Detector(std::string device);
-   ~plx9030Detector();
-   void init(void);
-   void start(void);
-   void stop(void);
-   raw_data readMem(void);
-   four_value read4Value(void);
-   unsigned char checkMem(void);
- public:
-   int status;
-   
- private:
-   int fd;
- };
- 
+struct raw_data{
+	int code;
+	int value;
+	uint16_t raw;
+};
+
+struct four_value{
+	int x1,x2,y1,y2;
+	bool correct;
+};
+
+
+class plx9030Detector{
+public:
+	explicit plx9030Detector(std::string device);
+	~plx9030Detector();
+	void init(void);
+	void start(void);
+	void stop(void);
+	raw_data readMem(void);
+	std::vector<raw_data> getAllMemory(void);
+	std::vector<four_value> convertToFourValue(std::vector<raw_data>);
+	unsigned char checkMem(void);
+
+public:
+	int status;
+	static bool is_runing;
+	static bool is_mem_end;
+	static bool is_half_mem_end;
+	static unsigned int mem_count;
+	
+private:
+	PLX9030::plx9030 *plx = nullptr;
+	int fromCode(int code){
+		switch(code){
+		case X1:
+			return 0;
+		case X2:
+			return 1;
+		case Y1:
+			return 2;
+		case Y2:
+			return 3;
+		}
+	}
+};
 
 }
-
 
 #endif // PLX9030DETECTOR_H

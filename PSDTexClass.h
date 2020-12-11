@@ -54,6 +54,32 @@ namespace PSDTex_ns
 //=========================================
 //	Define classes for attributes
 //=========================================
+//	Attribute full_mem class definition
+class full_memAttrib: public Tango::Attr
+{
+public:
+	full_memAttrib():Attr("full_mem",
+			Tango::DEV_BOOLEAN, Tango::READ) {};
+	~full_memAttrib() {};
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+		{(static_cast<PSDTex *>(dev))->read_full_mem(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+		{return (static_cast<PSDTex *>(dev))->is_full_mem_allowed(ty);}
+};
+
+//	Attribute half_mem class definition
+class half_memAttrib: public Tango::Attr
+{
+public:
+	half_memAttrib():Attr("half_mem",
+			Tango::DEV_BOOLEAN, Tango::READ) {};
+	~half_memAttrib() {};
+	virtual void read(Tango::DeviceImpl *dev,Tango::Attribute &att)
+		{(static_cast<PSDTex *>(dev))->read_half_mem(att);}
+	virtual bool is_allowed(Tango::DeviceImpl *dev,Tango::AttReqType ty)
+		{return (static_cast<PSDTex *>(dev))->is_half_mem_allowed(ty);}
+};
+
 //	Attribute image class definition
 class imageAttrib: public Tango::ImageAttr
 {
