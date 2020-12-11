@@ -155,6 +155,10 @@ void PSDTex::init_device()
 	clearImage();
 	if(pd!=nullptr) delete pd;
 	pd = new PLX9030Detector::plx9030Detector(devicefile_path);
+	if(pd->status!=PLX9030Detector::STATUS::OK){
+		device_state = Tango::FAULT;
+		device_status = "error open device";
+	}
 	pd->init();
 	device_state = Tango::ON;
 	
@@ -375,9 +379,9 @@ void PSDTex::add_dynamic_attributes()
 {
 	/*----- PROTECTED REGION ID(PSDTex::add_dynamic_attributes) ENABLED START -----*/
 	
-		//	Add your own code to create and add dynamic attributes if any
+	//	Add your own code to create and add dynamic attributes if any
 	
-		/*----- PROTECTED REGION END -----*/	//	PSDTex::add_dynamic_attributes
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::add_dynamic_attributes
 }
 
 //--------------------------------------------------------
@@ -392,14 +396,17 @@ void PSDTex::start()
 	DEBUG_STREAM << "PSDTex::Start()  - " << device_name << endl;
 	/*----- PROTECTED REGION ID(PSDTex::start) ENABLED START -----*/
 
-	pd->init();
-	pd->start();
-	isStart = true;
-	log->write("Start counting");
-	log->initRaw();
-	device_state = Tango::RUNNING;
-	device_status = "counting...";
-	
+	if(isStart){
+		device_status = "already started.";
+	}else{
+		pd->init();
+		pd->start();
+		isStart = true;
+		log->write("Start counting");
+		log->initRaw();
+		device_state = Tango::RUNNING;
+		device_status = "counting...";
+	}
 	/*----- PROTECTED REGION END -----*/	//	PSDTex::start
 }
 //--------------------------------------------------------
@@ -413,14 +420,17 @@ void PSDTex::stop()
 {
 	DEBUG_STREAM << "PSDTex::Stop()  - " << device_name << endl;
 	/*----- PROTECTED REGION ID(PSDTex::stop) ENABLED START -----*/
-	
-	pd->stop();
-	isStart = false;
-	log->write("Stop counting");
-	log->stopRaw();
-	device_state = Tango::ON;
-	device_status = "stop";
-	
+
+	if(isStart){
+		pd->stop();
+		isStart = false;
+		log->write("Stop counting");
+		log->stopRaw();
+		device_state = Tango::ON;
+		device_status = "stop";
+	}else{
+		device_status = "already stoped.";
+	}
 	/*----- PROTECTED REGION END -----*/	//	PSDTex::stop
 }
 //--------------------------------------------------------

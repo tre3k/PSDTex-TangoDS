@@ -9,7 +9,10 @@ unsigned int plx9030Detector::mem_count = 0;
 
 plx9030Detector::plx9030Detector(std::string device){
 	plx = new PLX9030::plx9030(device);
-	if(plx->getStatus()!=0) std::cout << "error open device!\n";
+	if(plx->getStatus()!=0){
+		std::cout << "error open device!\n";
+		status = STATUS::ERROR_OPEN_FILE;
+	}
 	
 }
 
@@ -19,6 +22,11 @@ plx9030Detector::~plx9030Detector(){
 }
 
 void plx9030Detector::init(){
+	if(plx->getStatus()!=0){
+		std::cout << "device not open" << std::endl;
+		return;
+	}
+
 	std::cout << "init!" << std::endl;
 	
 	plx->write8(PLX9030::CS0,0,0);                         // RESET
@@ -74,6 +82,10 @@ void plx9030Detector::init(){
 }
 
 void plx9030Detector::start(){
+	if(plx->getStatus()!=0){
+		std::cout << "device not open" << std::endl;
+		return;
+	}
 	std::cout << "start!\n";
 	
 	plx->write8(PLX9030::CS0,0,0x80);
@@ -85,6 +97,10 @@ void plx9030Detector::start(){
 }
 
 void plx9030Detector::stop(){
+	if(plx->getStatus()!=0){
+		std::cout << "device not open" << std::endl;
+		return;
+	}
 	plx->write_hw16(PLX9030::CS3, 31, 0xf803);
 	std::cout << "stop!\n";
 }
@@ -93,6 +109,12 @@ raw_data plx9030Detector::readMem(){
 	raw_data retval;
 	uint16_t tmp;
 
+	if(plx->getStatus()!=0){
+		std::cout << "device not open" << std::endl;
+		return retval;
+	}
+
+	
 	tmp = (unsigned short int)(plx->read_hw16(PLX9030::CS3,256)&0xffff);
 	retval.raw = tmp;
 	retval.code = (tmp & 0xe000) >> 13;
@@ -104,6 +126,11 @@ raw_data plx9030Detector::readMem(){
 std::vector<raw_data> plx9030Detector::getAllMemory(void){
 	std::vector<raw_data> retval;
 
+	if(plx->getStatus()!=0){
+		std::cout << "device not open" << std::endl;
+		return retval;
+	}
+	
 	raw_data mem_val;
 	int count = 0;
 	int watchdog = 0;
@@ -147,6 +174,10 @@ std::vector<four_value> plx9030Detector::convertToFourValue(std::vector<raw_data
 }
 
 unsigned char plx9030Detector::checkMem(){
+	if(plx->getStatus()!=0){
+		std::cout << "device not open" << std::endl;
+		return 0xa0;
+	}
 	unsigned char byte = 0x00;
 	byte = plx->read8(PLX9030::CS0,3);
 	byte &= 0x0f;

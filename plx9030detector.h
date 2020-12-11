@@ -14,8 +14,6 @@
 
 
 namespace PLX9030Detector{
-
-#define MEMORY_SIZE 524288 //bytes
  
 #define MEMORY_EMPTY 0
 #define MEMORY_HALF 2
@@ -37,6 +35,10 @@ struct four_value{
 	bool correct;
 };
 
+enum STATUS{
+	OK,
+	ERROR_OPEN_FILE
+};
 
 class plx9030Detector{
 public:
@@ -51,7 +53,7 @@ public:
 	unsigned char checkMem(void);
 
 public:
-	int status;
+	int status = STATUS::OK;
 	static bool is_runing;
 	static bool is_mem_end;
 	static bool is_half_mem_end;
