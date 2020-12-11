@@ -1,0 +1,86 @@
+#ifndef PLX9030C_H
+#define PLX9030C_H
+
+#include <iostream>
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdbool.h>
+#include <stropts.h>
+
+namespace PLX9030{
+
+
+#define CS0_SET_ADDR 0xfacecaf0
+#define CS1_SET_ADDR CS0_SET_ADDR+1
+#define CS2_SET_ADDR CS0_SET_ADDR+2
+#define CS3_SET_ADDR CS0_SET_ADDR+3
+#define CS0_SET_ADDR16 CS0_SET_ADDR+4
+#define CS1_SET_ADDR16 CS0_SET_ADDR+5
+#define CS2_SET_ADDR16 CS0_SET_ADDR+6
+#define CS3_SET_ADDR16 CS0_SET_ADDR+7
+
+
+const uint32_t CS0 = CS0_SET_ADDR;
+const uint32_t CS1 = CS1_SET_ADDR;
+const uint32_t CS2 = CS2_SET_ADDR;
+const uint32_t CS3 = CS3_SET_ADDR;
+const uint32_t CS0_16 = CS0_SET_ADDR16;
+const uint32_t CS1_16 = CS1_SET_ADDR16;
+const uint32_t CS2_16 = CS2_SET_ADDR16;
+const uint32_t CS3_16 = CS3_SET_ADDR16;
+
+
+    enum{
+        STATUS_OK,
+        STATUS_FD_ERROR,
+        STATUS_WRITE_ERROR,
+        STATUS_READ_ERROR,
+        STATUS_IOCTL_ERROR
+    };
+
+    class plx9030{
+
+    private:
+        /* this file descriptor of device */
+        int fd;
+        int status;
+
+    public:
+        explicit plx9030(std::string device);
+        ~plx9030();
+
+        /* return status, errors, etc. */
+        int getStatus(void);
+        /* just return fd variable */
+        int getFileDescriptor(void);
+
+        /* Functions for write/read CS0..3 for 8,16,24 and 32 bits */
+        // base - CS0,CS1,CS2,CS3
+        char read8(uint32_t base, long int offset);
+        void write8(uint32_t base, long int offset, char byte);
+
+        uint16_t read16(uint32_t base, long int offset);
+        void write16(uint32_t base, long int offset, uint16_t word);
+
+	uint16_t read_hw16(uint32_t base, long int offset);
+        void write_hw16(uint32_t base, long int offset, uint16_t word);       
+	
+        uint32_t read24(uint32_t base, long int offset);
+        void write24(uint32_t base, long int offset, uint32_t twoword);
+
+        uint32_t read32(uint32_t base, long int offset);
+        void write32(uint32_t base, long int offset, uint32_t twoword);
+
+        /* set mask / unset mask - selective set/unset bits in register by mask */
+        // mask - just or operation (bit1|bit2|bit3)
+        void setMask(uint32_t base, long int offset, unsigned char mask);
+        void unsetMask(uint32_t base, long int offset, unsigned char mask);
+    };
+}
+
+
+#endif //PLX9030C_H
+
+/* EOF */
