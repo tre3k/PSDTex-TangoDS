@@ -62,6 +62,9 @@ private:
 	PLX9030Detector::plx9030Detector *pd = nullptr;
 	LogClass *log = nullptr;
 	short int global_flags = 0;
+	bool isStart = false;
+
+	void readMem(void);
 	
 /*----- PROTECTED REGION END -----*/	//	PSDTex::Data Members
 

@@ -84,27 +84,27 @@ PSDTex::PSDTex(Tango::DeviceClass *cl, string &s)
  : TANGO_BASE_CLASS(cl, s.c_str())
 {
 	/*----- PROTECTED REGION ID(PSDTex::constructor_1) ENABLED START -----*/
-		init_device();
-	
-		/*----- PROTECTED REGION END -----*/	//	PSDTex::constructor_1
+	init_device();
+		
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::constructor_1
 }
 //--------------------------------------------------------
 PSDTex::PSDTex(Tango::DeviceClass *cl, const char *s)
  : TANGO_BASE_CLASS(cl, s)
 {
 	/*----- PROTECTED REGION ID(PSDTex::constructor_2) ENABLED START -----*/
-		init_device();
+	init_device();
 	
-		/*----- PROTECTED REGION END -----*/	//	PSDTex::constructor_2
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::constructor_2
 }
 //--------------------------------------------------------
 PSDTex::PSDTex(Tango::DeviceClass *cl, const char *s, const char *d)
  : TANGO_BASE_CLASS(cl, s, d)
 {
 	/*----- PROTECTED REGION ID(PSDTex::constructor_3) ENABLED START -----*/
-		init_device();
+	init_device();
 	
-		/*----- PROTECTED REGION END -----*/	//	PSDTex::constructor_3
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::constructor_3
 }
 
 //--------------------------------------------------------
@@ -118,9 +118,9 @@ void PSDTex::delete_device()
 	DEBUG_STREAM << "PSDTex::delete_device() " << device_name << endl;
 	/*----- PROTECTED REGION ID(PSDTex::delete_device) ENABLED START -----*/
 	
-		//	Delete device allocated objects
+	//	Delete device allocated objects
 	
-		/*----- PROTECTED REGION END -----*/	//	PSDTex::delete_device
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::delete_device
 	delete[] attr_half_mem_read;
 	delete[] attr_image_read;
 }
@@ -143,9 +143,10 @@ void PSDTex::init_device()
 
 	//	Get the device properties from database
 	get_device_property();
-	
+	attr_full_mem_read = new Tango::DevBoolean[1];
 	attr_half_mem_read = new Tango::DevBoolean[1];
 	attr_image_read = new Tango::DevDouble[256*256];
+
 	/*----- PROTECTED REGION ID(PSDTex::init_device) ENABLED START -----*/
 
 	if(log!=nullptr) delete log;
@@ -154,7 +155,7 @@ void PSDTex::init_device()
 	clearImage();
 	if(pd!=nullptr) delete pd;
 	pd = new PLX9030Detector::plx9030Detector(devicefile_path);
-    
+	pd->init();
 	device_state = Tango::ON;
 	
 	log->write("INIT device");
@@ -271,8 +272,12 @@ void PSDTex::read_full_mem(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "PSDTex::read_full_mem(Tango::Attribute &attr) entering... " << endl;
 	/*----- PROTECTED REGION ID(PSDTex::read_full_mem) ENABLED START -----*/
-       
-	
+	bool flag = false;
+	if(global_flags & 1){
+		flag = true;
+	}
+
+	*attr_full_mem_read = flag;
 	attr.set_value(attr_full_mem_read);
 	
 	/*----- PROTECTED REGION END -----*/	//	PSDTex::read_full_mem
@@ -290,7 +295,15 @@ void PSDTex::read_half_mem(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "PSDTex::read_half_mem(Tango::Attribute &attr) entering... " << endl;
 	/*----- PROTECTED REGION ID(PSDTex::read_half_mem) ENABLED START -----*/
-	//	Set the attribute value
+
+	bool flag = false;
+	global_flags = pd->checkMem() & 0x0f;
+	if(global_flags & 2){
+		flag = true;
+		readMem();
+	}
+	
+	*attr_half_mem_read = flag;
 	attr.set_value(attr_half_mem_read);
 	
 	/*----- PROTECTED REGION END -----*/	//	PSDTex::read_half_mem
@@ -304,60 +317,51 @@ void PSDTex::read_half_mem(Tango::Attribute &attr)
  *	Attr type:	Image max = 256 x 256
  */
 //--------------------------------------------------------
+
+void PSDTex::readMem(){
+	const int size_x = 256;
+	const int size_y = 256;
+	
+	int sum_x {0}, sum_y{0}, ix{0},iy{0};
+	double c_x{1.0},c_y{1.0};
+
+	std::vector<PLX9030Detector::raw_data> values;
+	std::vector<PLX9030Detector::four_value> values4;
+
+	values = pd->getAllMemory();
+	log->writeRaw(values);
+	values4 = pd->convertToFourValue(values);
+	
+	for(auto val: values4){
+		std::cout << " x1 = " << val.x1
+			  << ", x2 = " << val.x2
+			  << ", y1 = " << val.y1
+			  << ", y2 = " << val.y2;
+		if(!val.correct) std::cout << " NOT CORRECT!";
+		std::cout << std::endl;
+		if(val.correct){
+			ix = (int)size_x*val.x1/(val.x1+val.x2)-size_x/2;
+			iy = (int)size_y*val.y1/(val.y1+val.y2)-size_y/2;
+			setImageCell(ix,iy,1.0);
+		}	
+	}
+	
+}
+
 void PSDTex::read_image(Tango::Attribute &attr)
 {
 	DEBUG_STREAM << "PSDTex::read_image(Tango::Attribute &attr) entering... " << endl;
-	/*----- PROTECTED REGION ID(PSDTex::read_image) ENABLED START -----*/
+	/*----- PROTECTED REGION ID(PSDTex::read_image) ENABLED START -----*/	
+	log->write("read image");
 
-		const int size_x = 256;
-		const int size_y = 256;
-
-		int sum_x {0}, sum_y{0}, ix{0},iy{0};
-		double c_x{1.0},c_y{1.0};
-
-		log->write("read image");
-		
-		PLX9030Detector::four_value data4;
-		do{
-			data4 = pd->read4Value();
-			if(!data4.correct){
-				log->write4values(data4.x1,data4.x2,data4.y1,data4.y2,false);
-				continue;
-			}
-			log->write4values(data4.x1,data4.x2,data4.y1,data4.y2,true);
-			sum_x = data4.x1+data4.x2;
-			sum_y = data4.y1+data4.y2;
-
-			/*
-			  if(manual_ceoff){
-			  c_x = coeff_x;
-			  c_y = coeff_y;
-			  }else{
-			  c_x = (double)size_x/(double)sum_x;
-			  c_y = (double)size_y/(double)sum_y;
-			  }
-			*/
-
-
-			ix = data4.x2-data4.x1;
-			iy = data4.y2-data4.y1;
-		
-			ix = (int)(ix*c_x+0.5);
-			iy = (int)(iy*c_y+0.5);
-
-
-			//ix = (int)size_x*data4.x1/(data4.x1+data4.x2)-size_x/2;
-			//iy = (int)size_y*data4.y1/(data4.y1+data4.y2)-size_y/2;
-
-			//std::cout << ix << " " << iy << "\n";
-
-			//emit setCell(ix,iy,1);
-			setImageCell(ix,iy,1.0);
-		}while(data4.correct);
-
-		attr.set_value(attr_image_read, 256, 256);
+	if(isStart){
+		pd->stop();
+		readMem();
+		pd->start();
+	}
+	attr.set_value(attr_image_read, 256, 256);
 	
-		/*----- PROTECTED REGION END -----*/	//	PSDTex::read_image
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::read_image
 }
 
 //--------------------------------------------------------
@@ -388,13 +392,15 @@ void PSDTex::start()
 	DEBUG_STREAM << "PSDTex::Start()  - " << device_name << endl;
 	/*----- PROTECTED REGION ID(PSDTex::start) ENABLED START -----*/
 
-		pd->init();
-		pd->start();
-		log->write("Start counting");
-		device_state = Tango::RUNNING;
-		device_status = "counting...";
-		
-		/*----- PROTECTED REGION END -----*/	//	PSDTex::start
+	pd->init();
+	pd->start();
+	isStart = true;
+	log->write("Start counting");
+	log->initRaw();
+	device_state = Tango::RUNNING;
+	device_status = "counting...";
+	
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::start
 }
 //--------------------------------------------------------
 /**
@@ -408,12 +414,14 @@ void PSDTex::stop()
 	DEBUG_STREAM << "PSDTex::Stop()  - " << device_name << endl;
 	/*----- PROTECTED REGION ID(PSDTex::stop) ENABLED START -----*/
 	
-		pd->stop();
-		log->write("Stop counting");
-		device_state = Tango::ON;
-		device_status = "stop";
+	pd->stop();
+	isStart = false;
+	log->write("Stop counting");
+	log->stopRaw();
+	device_state = Tango::ON;
+	device_status = "stop";
 	
-		/*----- PROTECTED REGION END -----*/	//	PSDTex::stop
+	/*----- PROTECTED REGION END -----*/	//	PSDTex::stop
 }
 //--------------------------------------------------------
 /**

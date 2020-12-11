@@ -5,16 +5,23 @@
 #include <fstream>
 #include <ctime>
 
+#include "plx9030detector.h"
+
 class LogClass{
 protected:
 	std::string _logfile;
 	std::ofstream lf;
+	FILE *rf;
+
 public:
 	LogClass(std::string logfile);
 	~LogClass(void){lf.close();}
 	void write(std::string text);
 	void write4values(double x1,double x2,double y1, double y2, bool correct);
-
+	void initRaw();
+	void writeRaw(std::vector<PLX9030Detector::raw_data> raw_values);
+	void stopRaw();
+	
 };
 
 
